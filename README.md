@@ -27,7 +27,7 @@ MYBIPEDAL robot assets, configs and tasks have been removed
 
 | | Model | Description | DoF | Formats |
 |:---:|---|---|:---:|---|
-| <img src="doc/mybipedalsf.png" alt="SF_MYBIPEDAL" width="320" /> | **SF_MYBIPEDAL** | Biped with sole feet (ankle pitch). 10 position actions.<br>`Isaac-Limx-SF-MYBIPEDAL-Blind-Flat-v0` | 10 | USD · URDF · Xacro · MJCF |
+| <img src="doc/mybipedalsf.png" alt="SF_MYBIPEDAL" width="320" /> | **SF_MYBIPEDAL** | Biped with sole feet (ankle pitch). 10 position actions.<br>`Isaac-SF-MYBIPEDAL-Blind-Flat-v0` | 10 | USD · URDF · Xacro · MJCF |
 
 ## Results on the real robot and in simulation
 
@@ -115,11 +115,6 @@ python scripts/rsl_rl/play_control.py --task SF-MYBIPEDAL-Blind-Flat-Play-v0 --n
 Training outputs go to `logs/rsl_rl/` and are git-ignored, as are
 `*.pt`, `*.onnx` and `*.jit` files.
 
-## Contributing
-
-Local checks that match CI, and a short end-to-end smoke run, are in
-[CONTRIBUTING.md](CONTRIBUTING.md#verification-before-opening-a-pr).
-
 ## Scope
 
 **Not included** — by design:
@@ -148,36 +143,6 @@ Local checks that match CI, and a short end-to-end smoke run, are in
 This project is distributed under the **Apache License, Version 2.0**
 (January 2004). The full text is in [`LICENSE`](LICENSE) at the root
 of the repository. SPDX identifier: `Apache-2.0`.
-
-- [`NOTICE`](NOTICE) — required attribution notice.
-- [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) — per-component
-  provenance: the Isaac Lab-derived extension, the vendored
-  `rsl_rl/` fork (BSD-3-Clause), dev-tool license texts (including
-  a GPL entry that must be classified before release), bundled
-  STL / USD assets, and doc media.
-- [`SECURITY.md`](SECURITY.md) — how to report a vulnerability or a
-  safety-adjacent RL / reward / termination issue.
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) — dev setup, vendored-fork
-  update policy, PR checklist, DCO sign-off.
-- [`CHANGELOG.md`](CHANGELOG.md) — release notes and the currently
-  outstanding **`⚠ TO CONFIRM`** items that block the first public
-  tag.
-
-Note on subtrees:
-
-- `exts/bipedal_locomotion/setup.py` declares
-  `license="Apache-2.0"`, aligned with the top-level LICENSE. The
-  per-file Isaac-Lab-derivation audit is tracked separately as
-  `⚠ TO CONFIRM` in `THIRD_PARTY_NOTICES.md` §1.
-- `rsl_rl/` is a **vendored fork** of
-  [`leggedrobotics/rsl_rl`](https://github.com/leggedrobotics/rsl_rl)
-  under **BSD-3-Clause**; upstream copyright notices are retained
-  (see `THIRD_PARTY_NOTICES.md` §2 and
-  `CONTRIBUTING.md#vendored-rsl_rl-update-policy`).
-
-For a summary of local modifications relative to upstream, see
-[`CHANGES_VS_UPSTREAM.md`](rsl_rl/CHANGES_VS_UPSTREAM.md) and
-[`licenses/dependencies/README.md`](rsl_rl/licenses/dependencies/README.md).
 
 ## Cite & support
 
