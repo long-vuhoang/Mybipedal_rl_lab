@@ -1,7 +1,7 @@
 # mybipedal_rl_lab
 
 > **Part of the MyBipedal open-source ecosystem.
-Reinforcement learning training stack for the LimX **MYBIPEDAL** bipedal
+Reinforcement learning training stack for the **MYBIPEDAL** bipedal
 robot, built on top of
 [Isaac Lab](https://isaac-sim.github.io/IsaacLab/) and using PPO to
 train locomotion policies. This repository focuses on flat-terrain
@@ -34,19 +34,19 @@ MYBIPEDAL robot assets, configs and tasks have been removed
 **Real MYBIPEDAL** (SF reallife scene):
 
 <p align="center">
-  <img src="doc/01_walk1.gif" alt="MYBIPEDAL SF real-hardware deployment" width="32%" />
-  <img src="doc/02_turn1.gif" alt="MYBIPEDAL SF real-hardware deployment" width="32%" />
-  <img src="doc/03_walkside.gif" alt="MYBIPEDAL SF real-hardware deployment" width="32%" />
-  <img src="doc/04_walk2.gif" alt="MYBIPEDAL SF real-hardware deployment" width="32%" />
+  <img src="doc/gifs/01_walk1.gif" alt="MYBIPEDAL SF real-hardware deployment" width="32%" />
+  <img src="doc/gifs/02_turn1.gif" alt="MYBIPEDAL SF real-hardware deployment" width="32%" />
+  <img src="doc/gifs/03_walkside.gif" alt="MYBIPEDAL SF real-hardware deployment" width="32%" />
+  <img src="doc/gifs/04_walk2.gif" alt="MYBIPEDAL SF real-hardware deployment" width="32%" />
 </p>
 
-**IsaacSim** (SF / WF / DASF_MYBIPEDAL):
+**IsaacSim** (SF MYBIPEDAL):
 
 <p align="center">
-  <img src="doc/sim_walk1.gif" alt="IsaacSim SF" width="32%" />
-  <img src="doc/sim_turn1.gif" alt="IsaacSim SF" width="32%" />
-  <img src="doc/sim_walkside.gif" alt="IsaacSim WF" width="32%" />
-  <img src="doc/sim_walk2.gif" alt="IsaacSim SF" width="32%" />
+  <img src="doc/gifs/sim_walk1.gif" alt="IsaacSim SF" width="32%" />
+  <img src="doc/gifs/sim_turn1.gif" alt="IsaacSim SF" width="32%" />
+  <img src="doc/gifs/sim_walkside.gif" alt="IsaacSim WF" width="32%" />
+  <img src="doc/gifs/sim_walk2.gif" alt="IsaacSim SF" width="32%" />
 </p>
 
 ## Layout
