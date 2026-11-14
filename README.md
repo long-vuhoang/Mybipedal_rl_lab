@@ -43,10 +43,10 @@ MYBIPEDAL robot assets, configs and tasks have been removed
 **IsaacSim** (SF MYBIPEDAL):
 
 <p align="center">
-  <img src="doc/gifs/sim_walk1.gif" alt="IsaacSim SF" width="32%" />
-  <img src="doc/gifs/sim_turn1.gif" alt="IsaacSim SF" width="32%" />
-  <img src="doc/gifs/sim_walkside.gif" alt="IsaacSim WF" width="32%" />
-  <img src="doc/gifs/sim_walk2.gif" alt="IsaacSim SF" width="32%" />
+  <img src="doc/gifs/sim_walk1.gif" alt="IsaacSim SF" width="64%" />
+  <img src="doc/gifs/sim_turn1.gif" alt="IsaacSim SF" width="64%" />
+  <img src="doc/gifs/sim_walkside.gif" alt="IsaacSim WF" width="64%" />
+  <img src="doc/gifs/sim_walk2.gif" alt="IsaacSim SF" width="64%" />
 </p>
 
 ## Layout
