@@ -1,0 +1,63 @@
+diff --git a/exts/bipedal_locomotion/bipedal_locomotion/utils/wrappers/rsl_rl/__init__.py b/exts/bipedal_locomotion/bipedal_locomotion/utils/wrappers/rsl_rl/__init__.py
+index 8325dc7..eb62f77 100644
+--- a/exts/bipedal_locomotion/bipedal_locomotion/utils/wrappers/rsl_rl/__init__.py
++++ b/exts/bipedal_locomotion/bipedal_locomotion/utils/wrappers/rsl_rl/__init__.py
+@@ -7,4 +7,4 @@
+ 
+ from isaaclab_rl.rsl_rl import *
+ 
+-from .rl_mlp_cfg import  RslRlPpoAlgorithmMlpCfg, export_mlp_as_onnx, export_policy_as_jit
++from .rl_mlp_cfg import  RslRlPpoAlgorithmMlpCfg, export_mlp_as_onnx, export_policy_as_jit, export_encoder_as_jit
+diff --git a/exts/bipedal_locomotion/bipedal_locomotion/utils/wrappers/rsl_rl/rl_mlp_cfg.py b/exts/bipedal_locomotion/bipedal_locomotion/utils/wrappers/rsl_rl/rl_mlp_cfg.py
+index 6a2f34f..0aed88f 100644
+--- a/exts/bipedal_locomotion/bipedal_locomotion/utils/wrappers/rsl_rl/rl_mlp_cfg.py
++++ b/exts/bipedal_locomotion/bipedal_locomotion/utils/wrappers/rsl_rl/rl_mlp_cfg.py
+@@ -60,3 +60,23 @@ def export_policy_as_jit(actor_critic, path):
+     model = copy.deepcopy(actor_critic.actor).to("cpu")
+     traced_script_module = torch.jit.script(model)
+     traced_script_module.save(path)
++
++
++def export_encoder_as_jit(encoder, path):
++    """Export the MLP_Encoder's inner nn.Sequential (velocity estimator) as a
++    TorchScript .pt file, analogous to export_policy_as_jit for the actor.
++    Only `encoder.encoder` (the plain nn.Sequential) is scripted -- not the
++    MLP_Encoder wrapper class itself, which has dynamic attributes/methods
++    (encode(), inference(), self.encoder_out, self.output_detach) that
++    torch.jit.script cannot reliably trace. This mirrors how
++    export_policy_as_jit scripts actor_critic.actor rather than actor_critic.
++    Lets sim2sim consume a single .pt pair (policy.pt + encoder.pt) instead of
++    mixing in onnx, while export_mlp_as_onnx() below remains available for the
++    sim2real deployment stack.
++    """
++    os.makedirs(path, exist_ok=True)
++    path = os.path.join(path, "encoder.pt")
++    model = copy.deepcopy(encoder.encoder).to("cpu")
++    model.eval()
++    traced_script_module = torch.jit.script(model)
++    traced_script_module.save(path)
+diff --git a/scripts/rsl_rl/play.py b/scripts/rsl_rl/play.py
+index e597aed..8a5c0a2 100644
+--- a/scripts/rsl_rl/play.py
++++ b/scripts/rsl_rl/play.py
+@@ -53,7 +53,7 @@ from isaaclab_tasks.utils import get_checkpoint_path, parse_env_cfg
+ from isaaclab_rl.rsl_rl import RslRlOnPolicyRunnerCfg, RslRlVecEnvWrapper
+ # Import extensions to set up environment tasks
+ import bipedal_locomotion  # noqa: F401
+-from bipedal_locomotion.utils.wrappers.rsl_rl import RslRlPpoAlgorithmMlpCfg, export_mlp_as_onnx, export_policy_as_jit
++from bipedal_locomotion.utils.wrappers.rsl_rl import RslRlPpoAlgorithmMlpCfg, export_mlp_as_onnx, export_policy_as_jit, export_encoder_as_jit
+ 
+ 
+ def main():
+@@ -112,6 +112,11 @@ def main():
+             ppo_runner.alg.actor_critic, export_model_dir
+         )
+         print("Exported policy as jit script to: ", export_model_dir)
++        export_encoder_as_jit(
++            ppo_runner.alg.encoder, export_model_dir
++        )
++        print("Exported encoder as jit script to: ", export_model_dir)
++        # keep onnx exports too -- used by the sim2real deployment stack
+         export_mlp_as_onnx(
+             ppo_runner.alg.actor_critic.actor, 
+             export_model_dir, 
