@@ -6,9 +6,9 @@ from isaaclab.assets.articulation import ArticulationCfg
 from bipedal_locomotion.actuators import DelayedImplicitActuatorCfg
 
 current_dir = os.path.dirname(__file__)
-usd_path = os.path.join(current_dir, "../usd/WF_MINIBOT/urdf/mrbombastic.urdf")
+usd_path = os.path.join(current_dir, "../usd/WF_MYBIPEDAL/urdf/mrbombastic.urdf")
 
-WHEELFOOT_MINIBOT_CFG = ArticulationCfg(
+WHEELFOOT_MYBIPEDAL_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
         usd_path=usd_path,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(

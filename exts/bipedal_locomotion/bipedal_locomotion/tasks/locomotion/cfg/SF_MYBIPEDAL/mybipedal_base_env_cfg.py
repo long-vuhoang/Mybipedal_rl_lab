@@ -26,8 +26,8 @@ from bipedal_locomotion.tasks.locomotion import mdp
 
 
 @configclass
-class WF_MINIBOT_SceneCfg(InteractiveSceneCfg):
-    """Configuration for the WF_MINIBOT scene"""
+class SF_MYBIPEDAL_SceneCfg(InteractiveSceneCfg):
+    """Configuration for the SF_MYBIPEDAL (mrbombastic) scene"""
 
     # terrain
     terrain = TerrainImporterCfg(
@@ -62,7 +62,7 @@ class WF_MINIBOT_SceneCfg(InteractiveSceneCfg):
         ),
     )
 
-    # bipedal robot
+    # bipedal robot (mrbombastic)
     robot: ArticulationCfg = MISSING
 
     # height sensors
@@ -86,62 +86,46 @@ class WF_MINIBOT_SceneCfg(InteractiveSceneCfg):
 class CommandsCfg:
     """Command terms for the MDP"""
 
+    gait_command = mdp.UniformGaitCommandCfg(
+        resampling_time_range=(10.0, 10.0),
+        debug_vis=False,
+        ranges=mdp.UniformGaitCommandCfg.Ranges(
+            frequencies=(0.8, 1.0),  # Gait frequency range [Hz]
+            offsets=(0.5, 0.5),  # Phase offset range [0-1]
+            durations=(0.5, 0.5),  # Contact duration range [0-1]
+            swing_height=(0.06, 0.12),
+        ),
+    )
+
     base_velocity = mdp.UniformVelocityCommandCfg(
         asset_name="robot",
         heading_command=True,
         heading_control_stiffness=1.0,
-        rel_standing_envs=0.1,
+        rel_standing_envs=0.10,
         rel_heading_envs=1.0,
         debug_vis=True,
         resampling_time_range=(10.0, 10.0),
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
             lin_vel_x=(-1.0, 1.0),
-            lin_vel_y=(-0.0, 0.0),
+            lin_vel_y=(-0.8, 0.8),
             ang_vel_z=(-1.0, 1.0),
             heading=(-math.pi, math.pi),
         ),
     )
 
 
+# NOTE: these already match mrbombastic's URDF exactly (left_hip_pitch_joint, ...) - unchanged
 joint_order_name = [
-    "proximal_pitch_L_Joint",
-    "proximal_roll_L_Joint",
-    "proximal_yaw_L_Joint",
-    "knee_L_Joint",
-    "proximal_pitch_R_Joint",
-    "proximal_roll_R_Joint",
-    "proximal_yaw_R_Joint",
-    "knee_R_Joint",
-]
-joint_all_names = [
-    "proximal_pitch_L_Joint",
-    "proximal_roll_L_Joint",
-    "proximal_yaw_L_Joint",
-    "knee_L_Joint",
-    "wheel_L_Joint",
-    "proximal_pitch_R_Joint",
-    "proximal_roll_R_Joint",
-    "proximal_yaw_R_Joint",
-    "knee_R_Joint",
-    "wheel_R_Joint",
-]
-joint_pos_left_names = [
-    "proximal_pitch_L_Joint",
-    "proximal_roll_L_Joint",
-    "proximal_yaw_L_Joint",
-    "knee_L_Joint",
-]
-joint_pos_right_names = [
-    "proximal_pitch_R_Joint",
-    "proximal_roll_R_Joint",
-    "proximal_yaw_R_Joint",
-    "knee_R_Joint",
-]
-joint_vel_left_names = [
-    "wheel_L_Joint",
-]
-joint_vel_right_names = [
-    "wheel_R_Joint",
+    "left_hip_pitch_joint",
+    "left_hip_roll_joint",
+    "left_hip_yaw_joint",
+    "left_knee_joint",
+    "left_ankle_pitch_joint",
+    "right_hip_pitch_joint",
+    "right_hip_roll_joint",
+    "right_hip_yaw_joint",
+    "right_knee_joint",
+    "right_ankle_pitch_joint",
 ]
 
 
@@ -149,33 +133,11 @@ joint_vel_right_names = [
 class ActionsCfg:
     """Action specifications for the MDP"""
 
-    joint_pos_left = mdp.JointPositionActionCfg(
+    joint_pos = mdp.JointPositionActionCfg(
         asset_name="robot",
-        joint_names=joint_pos_left_names,
+        joint_names=joint_order_name,
         scale=0.25,
         use_default_offset=True,
-        preserve_order=True,
-    )
-
-    joint_vel_left = mdp.JointVelocityActionCfg(
-        asset_name="robot",
-        joint_names=joint_vel_left_names,
-        scale=1.0,
-        preserve_order=True,
-    )
-
-    joint_pos_right = mdp.JointPositionActionCfg(
-        asset_name="robot",
-        joint_names=joint_pos_right_names,
-        scale=0.25,
-        use_default_offset=True,
-        preserve_order=True,
-    )
-
-    joint_vel_right = mdp.JointVelocityActionCfg(
-        asset_name="robot",
-        joint_names=joint_vel_right_names,
-        scale=1.0,
         preserve_order=True,
     )
 
@@ -200,7 +162,7 @@ class ObservarionsCfg:
             scale=1.0,
         )
 
-        # robot joint measurements exclude wheel pos
+        # robot joint measurements
         joint_pos = ObsTerm(
             func=mdp.joint_pos_rel,
             params={"asset_cfg": SceneEntityCfg("robot", joint_names=joint_order_name, preserve_order=True)},
@@ -209,13 +171,17 @@ class ObservarionsCfg:
         )
         joint_vel = ObsTerm(
             func=mdp.joint_vel_rel,
-            params={"asset_cfg": SceneEntityCfg("robot", joint_names=joint_all_names, preserve_order=True)},
+            params={"asset_cfg": SceneEntityCfg("robot", joint_names=joint_order_name, preserve_order=True)},
             noise=Unoise(n_min=-1.5, n_max=1.5),
             scale=0.05,
         )
 
         # last action
         last_action = ObsTerm(func=mdp.last_action)
+
+        # gaits
+        gait_phase = ObsTerm(func=mdp.get_gait_phase)
+        gait_command = ObsTerm(func=mdp.get_gait_command, params={"command_name": "gait_command"})
 
         def __post_init__(self):
             self.enable_corruption = True
@@ -237,7 +203,7 @@ class ObservarionsCfg:
             scale=1.0,
         )
 
-        # robot joint measurements exclude wheel pos
+        # robot joint measurements
         joint_pos = ObsTerm(
             func=mdp.joint_pos_rel,
             params={"asset_cfg": SceneEntityCfg("robot", joint_names=joint_order_name, preserve_order=True)},
@@ -246,13 +212,17 @@ class ObservarionsCfg:
         )
         joint_vel = ObsTerm(
             func=mdp.joint_vel_rel,
-            params={"asset_cfg": SceneEntityCfg("robot", joint_names=joint_all_names, preserve_order=True)},
+            params={"asset_cfg": SceneEntityCfg("robot", joint_names=joint_order_name, preserve_order=True)},
             noise=Unoise(n_min=-1.5, n_max=1.5),
             scale=0.05,
         )
 
         # last action
         last_action = ObsTerm(func=mdp.last_action)
+
+        # gaits
+        gait_phase = ObsTerm(func=mdp.get_gait_phase)
+        gait_command = ObsTerm(func=mdp.get_gait_command, params={"command_name": "gait_command"})
 
         def __post_init__(self):
             self.enable_corruption = True
@@ -285,13 +255,16 @@ class ObservarionsCfg:
             scale=1.0,
         )
         joint_vel = ObsTerm(
-            func=mdp.joint_vel,
-            params={"asset_cfg": SceneEntityCfg("robot", joint_names=joint_all_names, preserve_order=True)},
+            func=mdp.joint_vel_rel,
+            params={"asset_cfg": SceneEntityCfg("robot", joint_names=joint_order_name, preserve_order=True)},
             scale=0.05,
         )
 
         # last action
         last_action = ObsTerm(func=mdp.last_action)
+
+        gait_phase = ObsTerm(func=mdp.get_gait_phase)
+        gait_command = ObsTerm(func=mdp.get_gait_command, params={"command_name": "gait_command"})
 
         # heights scan
         height_scan = ObsTerm(
@@ -306,12 +279,13 @@ class ObservarionsCfg:
         robot_joint_acc = ObsTerm(func=mdp.robot_joint_acc, scale=0.0025)
         feet_lin_vel = ObsTerm(
             func=mdp.feet_lin_vel,
-            params={"asset_cfg": SceneEntityCfg("robot", body_names="wheel_.*")},
+            params={"asset_cfg": SceneEntityCfg("robot", body_names=".*ankle_pitch.*")},
         )
         robot_mass = ObsTerm(func=mdp.robot_mass)
         feet_contact_force = ObsTerm(
             func=mdp.robot_contact_force,
-            params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names="wheel_.*")},
+            params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*ankle_pitch.*")},
+            scale=0.01,
         )
 
         def __post_init__(self):
@@ -333,20 +307,25 @@ class EventsCfg:
     """Configuration for events"""
 
     # startup
-    prepare_quantity_for_tron1_piper = EventTerm(
-        func=mdp.prepare_quantity_for_tron,
-        mode="startup",
-        params={
-            "asset_cfg": SceneEntityCfg("robot"),
-            "foot_radius": 0.10,
-        },
-    )
+    # NOTE: this event is TRON1/TRON2 point-foot specific (sets up a foot "radius" for a
+    # spring/point-contact foot model). mrbombastic has a flat ankle_pitch foot, not a
+    # point-foot -> this term almost certainly does not apply as-is. Recommend removing
+    # it (or replacing with an equivalent that matches mrbombastic's actual foot geometry)
+    # rather than just fixing the regex. Left commented out below.
+    # prepare_quantity_for_tron1_piper = EventTerm(
+    #     func=mdp.prepare_quantity_for_tron,
+    #     mode="startup",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot"),
+    #         "foot_radius": 0.074,
+    #     },
+    # )
     add_base_mass = EventTerm(
         func=mdp.randomize_rigid_body_mass,
         mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names="base_link"),
-            "mass_distribution_params": (-5.0, 5.0),
+            "mass_distribution_params": (-0.4, 0.4),
             "operation": "add",
         },
     )
@@ -359,11 +338,11 @@ class EventsCfg:
             "operation": "scale",
         },
     )
-    radomize_rigid_body_mass_inertia = EventTerm(
+    randomize_rigid_body_mass_inertia = EventTerm(
         func=mdp.randomize_rigid_body_mass_inertia,
         mode="startup",
         params={
-            "asset_cfg": SceneEntityCfg("robot"),
+            "asset_cfg": SceneEntityCfg("robot", body_names=["(left|right)_.*_link"]),
             "mass_inertia_distribution_params": (0.8, 1.2),
             "operation": "scale",
         },
@@ -372,10 +351,10 @@ class EventsCfg:
         func=mdp.randomize_rigid_body_material,
         mode="startup",
         params={
-            "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
+            "asset_cfg": SceneEntityCfg("robot", body_names=".*"),  # generic, no change needed
             "static_friction_range": (0.4, 1.2),
             "dynamic_friction_range": (0.7, 0.9),
-            "restitution_range": (0.0, 1.0),
+            "restitution_range": (0.0, 0.5),
             "num_buckets": 48,
         },
     )
@@ -383,7 +362,7 @@ class EventsCfg:
         func=mdp.randomize_actuator_gains,
         mode="startup",
         params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
+            "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),  # generic, no change needed
             "stiffness_distribution_params": (0.8, 1.2),
             "damping_distribution_params": (0.8, 1.2),
             "operation": "scale",
@@ -393,8 +372,8 @@ class EventsCfg:
         func=mdp.randomize_rigid_body_coms,
         mode="startup",
         params={
-            "asset_cfg": SceneEntityCfg("robot"),
-            "com_distribution_params": ((-0.05, 0.05), (-0.05, 0.05), (-0.05, 0.05)),
+            "asset_cfg": SceneEntityCfg("robot"),  # whole robot, no change needed
+            "com_distribution_params": ((-0.03, 0.03), (-0.03, 0.03), (-0.03, 0.03)),
             "operation": "add",
             "distribution": "uniform",
         },
@@ -432,111 +411,224 @@ class RewardsCfg:
     """Reward terms for the MDP"""
 
     # Reward terms: ---Task
-    rew_lin_vel_xy = RewTerm(
-        func=mdp.track_lin_vel_xy_exp,
-        weight=3.0,
-        params={"command_name": "base_velocity", "std": math.sqrt(0.2)},
-    )
-    rew_ang_vel_z = RewTerm(
-        func=mdp.track_ang_vel_z_exp,
+    track_lin_vel_x_exp = RewTerm(
+        func=mdp.track_lin_vel_x_yaw_frame_exp,
         weight=1.0,
+        params={"command_name": "base_velocity", "std": math.sqrt(0.30)},
+    )
+    track_lin_vel_y_exp = RewTerm(
+        func=mdp.track_lin_vel_y_yaw_frame_exp,
+        weight=1.0,
+        params={"command_name": "base_velocity", "std": math.sqrt(0.30)}, 
+    )
+    track_ang_vel_z_exp = RewTerm(
+        func=mdp.track_ang_vel_z_exp,
+        weight=0.8,
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)},
     )
-    keep_balance = RewTerm(
-        func=mdp.stay_alive,
-        weight=1.0,
+    base_height_exp = RewTerm(
+        func=mdp.base_height_exp,
+        weight=0.6,
+        params={"std": math.sqrt(0.005), "target_height": 0.35}, #was 0.33 cant reach this
     )
-    stand_still = RewTerm(
-        func=mdp.stand_still,
-        weight=-3.0,
-    )
+    keep_balance = RewTerm(func=mdp.stay_alive, weight=1.0)
 
-    # Reward terms: ---Body control
-    rew_leg_symmetry = RewTerm(
-        func=mdp.leg_symmetry,
+    # Reward terms: ---Gait
+    gait_reward = RewTerm(
+        func=mdp.GaitReward,
         weight=0.5,
-        params={"asset_cfg": SceneEntityCfg("robot", body_names="wheel_.*"), "std": math.sqrt(0.5)},
-    )
-    rew_same_foot_x_position = RewTerm(
-        func=mdp.same_feet_x_position,
-        weight=-10.0,
-        params={"asset_cfg": SceneEntityCfg("robot", body_names="wheel_.*")},
-    )
-    feet_distance = RewTerm(
-        func=mdp.distance_aligned,
-        weight=0.4,
         params={
-            "asset_cfg": SceneEntityCfg("robot", body_names=["wheel_[RL]_Link"]),
-            "min_dist": 0.36,
-            "max_dist": 0.48,
-            "desired_dist": 0.425,
-            "std": math.sqrt(0.01),
+            "tracking_contacts_shaped_force": 1.0,
+            "tracking_contacts_shaped_vel": 1.0,
+            "tracking_contacts_shaped_height": -0.0,
+            "gait_force_sigma": 25.0,
+            "gait_vel_sigma": 0.25,
+            "gait_height_sigma": 0.005,
+            "touch_down_vel": 0.0,
+            "kappa_gait_probs": 0.05,
+            "command_name": "gait_command",
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*ankle_pitch.*"),
+            "asset_cfg": SceneEntityCfg("robot", body_names=".*ankle_pitch.*"),
+            "use_reference_motion": True,
         },
     )
 
     # Reward terms: ---Base regulation
-    base_height = RewTerm(
-        func=mdp.base_com_height,
-        params={"target_height": 0.30},
-        weight=-20.0,
+    ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.15)
+    lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-0.5)
+    body_lin_acc = RewTerm(
+        func=mdp.body_lin_acc_l2,
+        weight=-0.002,
+        params={
+            "asset_cfg": SceneEntityCfg("robot", body_names="base_link"),
+        },
     )
-    lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-0.3)
-    ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.3)
-    flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-12.0)
+    flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-1.0)
 
     # Reward terms: ---Action regulation
-    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-0.02)
-    action_smoothness = RewTerm(func=mdp.ActionSmoothnessPenalty, weight=-0.01)
+    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-0.02)  # was -0.02
+    action_smoothness = RewTerm(func=mdp.ActionSmoothnessPenalty, weight=-0.004) # was -0.004
 
     # Reward terms: ---Contact regulation
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
-        weight=-0.25,
+        weight=-1.0,
         params={
-            "sensor_cfg": SceneEntityCfg(
-                "contact_forces",
-                body_names=["proximal_pitch_.*", "proximal_roll_.*", "knee_.*", "base_Link"],
-            ),
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names="(?!.*ankle_pitch.*).*"),
             "threshold": 10.0,
         },
     )
 
-    # Reward terms: ---Joint regulation
-    joint_torque_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-4e-7)
-    joint_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-1.5e-7)
-    non_wheel_pos_limits = RewTerm(
-        func=mdp.joint_pos_limits,
-        weight=-2.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names="(?!wheel_).*")},
-    )
-    joint_power_l1 = RewTerm(func=mdp.joint_powers_l1, weight=-1e-5)
-    proximal_yaw_init_offset = RewTerm(
-        func=mdp.joint_deviation_from_default_l2,
-        weight=-5.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["proximal_yaw_.*"])},
-    )
-
-    joint_vel_wheel_l2 = RewTerm(
-        func=mdp.joint_vel_l2,
-        weight=-5e-5,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names="wheel_.+")},
-    )
-    vel_non_wheel_l2 = RewTerm(
-        func=mdp.joint_vel_l2,
-        weight=-0.004,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names="(?!wheel_).*")},
-    )
-
-    base_at_midpoint = RewTerm(
-        func=mdp.base_projection_at_feet_midpoint,
-        weight=0.5,
+    # Reward terms: ---Body control
+    feet_distance = RewTerm(
+        func=mdp.distance_aligned,
+        weight=0.4,
         params={
-            "std": 0.05,
-            "asset_cfg": SceneEntityCfg("robot"),
-            "feet_cfg": SceneEntityCfg("robot", body_names="wheel_.*"),
+            "asset_cfg": SceneEntityCfg("robot", body_names=".*ankle_pitch.*"),
+            "min_dist": 0.18,
+            "max_dist": 0.38,
+            "desired_dist": 0.26,
+            "std": math.sqrt(0.01),
+            "command_name": "base_velocity",
+            "vy_max": 0.8,
+            "decay_power": 1.0,
         },
     )
-
+    feet_air_time = RewTerm(
+        func=mdp.feet_air_time_positive_biped,
+        weight=0.5,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*ankle_pitch.*"),
+        },
+    )
+    feet_slide = RewTerm(
+        func=mdp.feet_slide_penalty,
+        weight=-0.05,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*ankle_pitch.*"),
+            "asset_cfg": SceneEntityCfg("robot", body_names=".*ankle_pitch.*"),
+        },
+    )
+    feet_ang_slide_penalty = RewTerm(
+        func=mdp.feet_angle_slide,
+        weight=-0.1,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*ankle_pitch.*"),
+            "command_name": "base_velocity",
+            "asset_cfg": SceneEntityCfg("robot", body_names=".*ankle_pitch.*"),
+        },
+    )
+    # Reward terms: ---Joint regulation
+    dof_torques_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-4e-7)
+    dof_vel_l2 = RewTerm(func=mdp.joint_vel_l2, weight=-5e-5)
+    dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-5e-7)
+    dof_pos_limits = RewTerm(
+        func=mdp.joint_pos_limits,
+        weight=-0.2,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*")},
+    )
+    dof_vel_limits = RewTerm(
+        func=mdp.joint_vel_limits,
+        weight=-0.025,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*"), "soft_ratio": 0.92},
+    )
+    applied_torque_limits = RewTerm(
+        func=mdp.applied_torque_limits,
+        weight=-1e-2,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*"), },
+    )
+    dof_power_l1 = RewTerm(
+        func=mdp.weighted_joint_power_l1,
+        weight=-2.5e-7,
+        params={
+            "power_weight": {
+                "left_hip_pitch_joint": 0.01,
+                "left_hip_roll_joint": 0.01,
+                "left_hip_yaw_joint": 0.1,
+                "left_knee_joint": 0.01,
+                "left_ankle_pitch_joint": 0.01,
+                "right_hip_pitch_joint": 0.01,
+                "right_hip_roll_joint": 0.01,
+                "right_hip_yaw_joint": 0.1,
+                "right_knee_joint": 0.01,
+                "right_ankle_pitch_joint": 0.01,
+            }
+        },
+    )
+    joint_deviation_l1 = RewTerm(
+        func=mdp.weighted_joint_deviation_l1,
+        weight=-1.0,
+        params={
+            "deviation_weight": {
+                "left_hip_pitch_joint": 0.005,
+                "left_hip_roll_joint": 0.05,
+                "left_hip_yaw_joint": 0.05, #was 0.05
+                "left_knee_joint": 0.005,
+                "left_ankle_pitch_joint": 0.005,
+                "right_hip_pitch_joint": 0.005,
+                "right_hip_roll_joint": 0.05,
+                "right_hip_yaw_joint": 0.05, #was 0.05
+                "right_knee_joint": 0.005,
+                "right_ankle_pitch_joint": 0.005,
+            }
+        },
+    )
+    
+    knee_joint_orientation = RewTerm(
+        func=mdp.joint_orientation_l1,
+        weight=-1.0,
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=[".*knee.*"])
+        },
+    )
+    foot_joint_orientation = RewTerm(
+        func=mdp.joint_orientation_l1_symmetric,
+        weight=-0.1,
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=[".*ankle_pitch.*"])
+        },
+    )
+    orientation_exp_knee = RewTerm(
+        func=mdp.body_orientation_yaw_exp,
+        weight=0.1,
+        params={"asset_cfg": SceneEntityCfg("robot", body_names=".*knee.*"), "target_yaw": 0.0},
+    )
+    torques_smoothness_penalty = RewTerm(func=mdp.torques_smoothness_penalty, weight=-1.5e-7)
+    foot_contact_force = RewTerm(
+        func=mdp.contact_forces,
+        weight=-0.002,
+        params={
+            "asset_cfg": SceneEntityCfg("robot"),
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*ankle_pitch.*"),
+        },
+    )
+    hip_roll_common_mode = RewTerm(
+        func=mdp.hip_roll_common_mode_l2,
+        weight=-2.0,
+        params={
+            "asset_cfg": SceneEntityCfg(
+                "robot",
+                joint_names=[
+                    "left_hip_roll_joint",
+                    "right_hip_roll_joint",
+                ],
+            ),
+        },
+    )
+    # rew_leg_symmetry = RewTerm(
+    #     func=mdp.leg_symmetry,
+    #     weight=0.5,
+    #     params={"asset_cfg": SceneEntityCfg("robot", body_names=".*ankle_pitch.*"), "std": math.sqrt(0.5)},
+    # )
+    # base_at_midpoint = RewTerm(
+    #     func=mdp.base_projection_at_feet_midpoint,
+    #     weight=0.4,
+    #     params={
+    #         "std": 0.05,
+    #         "asset_cfg": SceneEntityCfg("robot"),
+    #         "feet_cfg": SceneEntityCfg("robot", body_names=".*ankle_pitch.*"),
+    #     },
+    # )
 
 @configclass
 class TerminationsCfg:
@@ -545,7 +637,10 @@ class TerminationsCfg:
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
     base_contact = DoneTerm(
         func=mdp.illegal_contact,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names="base_Link"), "threshold": 1.0},
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=["base_link", ".*hip_roll.*", ".*hip_pitch.*"]),
+            "threshold": 1.0,
+        },
     )
     bad_orientation = DoneTerm(func=mdp.bad_orientation, params={"limit_angle": math.radians(80.0)})
     action_out_of_limits = DoneTerm(
@@ -569,11 +664,11 @@ class CurriculumCfg:
 
 
 @configclass
-class WF_MINIBOT_EnvCfg(ManagerBasedRLEnvCfg):
-    """Configuration for the WF_MINIBOT environment"""
+class SF_MYBIPEDAL_EnvCfg(ManagerBasedRLEnvCfg):
+    """Configuration for the SF_MYBIPEDAL (mrbombastic) environment"""
 
     # Scene settings
-    scene: WF_MINIBOT_SceneCfg = WF_MINIBOT_SceneCfg(num_envs=4096, env_spacing=2.5)
+    scene: SF_MYBIPEDAL_SceneCfg = SF_MYBIPEDAL_SceneCfg(num_envs=4096, env_spacing=1.5)
     # Basic settings
     observations: ObservarionsCfg = ObservarionsCfg()
     actions: ActionsCfg = ActionsCfg()

@@ -1,2 +1,2 @@
-from .SF_MINIBOT import *
-from .WF_MINIBOT import *
+from .SF_MYBIPEDAL import *
+from .WF_MYBIPEDAL import *

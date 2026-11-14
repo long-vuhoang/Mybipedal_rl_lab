@@ -1,4 +1,4 @@
-<robot name="minibot">
+<robot name="mybipedal">
   <mujoco>
         <compiler meshdir="../meshes/" balanceinertia="true" discardvisual="false" fusestatic="false"/>
   </mujoco>
@@ -16,9 +16,9 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="-0.03 0.0 0.0715" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="../meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+      <box size="0.15 0.135 0.205"/>
     </geometry>
   </collision>
 </link>
@@ -29,13 +29,6 @@
     <mass value="0.679747192559733"/>
     <inertia ixx="0.000603" iyy="0.001082" izz="0.001111" ixy="-0.0" iyz="-0.0" ixz="-2.3e-05"/>
   </inertial>
-  <visual>
-    <origin xyz="0.005466 0.0 -0.06425" rpy="0 0 0"/>
-    <geometry>
-      <mesh filename="../meshes/battery_1.stl" scale="0.001 0.001 0.001"/>
-    </geometry>
-    <material name="silver"/>
-  </visual>
 </link>
 
 <link name="RS02_1_1">
@@ -146,9 +139,9 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.0371 -0.059 -0.0225" rpy="0 0 0"/>
+    <origin xyz="-0.0015 0.054 0.001" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="../meshes/left_hip_pitch_link_1.stl" scale="0.001 0.001 0.001"/>
+      <box size="0.0544 0.08 0.086"/>
     </geometry>
   </collision>
 </link>
@@ -167,9 +160,9 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.0371 0.059 -0.0225" rpy="0 0 0"/>
+    <origin xyz="-0.0015 -0.054 0.001" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="../meshes/right_hip_pitch_link_1.stl" scale="0.001 0.001 0.001"/>
+      <box size="0.0544 0.08 0.086"/>
     </geometry>
   </collision>
 </link>
@@ -188,9 +181,9 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.0121 -0.1115 -0.0225" rpy="0 0 0"/>
+    <origin xyz="-0.0248 -0.0 -0.012" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="../meshes/left_hip_roll_link_1.stl" scale="0.001 0.001 0.001"/>
+      <box size="0.0718 0.0622 0.086"/>
     </geometry>
   </collision>
 </link>
@@ -209,9 +202,9 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.0121 0.1115 -0.0225" rpy="0 0 0"/>
+    <origin xyz="-0.0248 -0.0 -0.012" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="../meshes/right_hip_roll_link_1.stl" scale="0.001 0.001 0.001"/>
+      <box size="0.0718 0.0622 0.086"/>
     </geometry>
   </collision>
 </link>
@@ -230,9 +223,9 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.03625 -0.1115 0.0325" rpy="0 0 0"/>
+    <origin xyz="0.0 0.0 -0.08" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="../meshes/left_hip_yaw_link_1.stl" scale="0.001 0.001 0.001"/>
+      <cylinder radius="0.041" length="0.16"/>
     </geometry>
   </collision>
 </link>
@@ -251,9 +244,9 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.03625 0.1115 0.0325" rpy="0 0 0"/>
+    <origin xyz="0.0 0.0 -0.08" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="../meshes/right_hip_yaw_link_1.stl" scale="0.001 0.001 0.001"/>
+      <cylinder radius="0.041" length="0.16"/>
     </geometry>
   </collision>
 </link>
@@ -272,9 +265,9 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.03625 -0.1382 0.1655" rpy="0 0 0"/>
+    <origin xyz="0.0 -0.026 -0.08" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="../meshes/left_knee_link_1.stl" scale="0.001 0.001 0.001"/>
+      <cylinder radius="0.032" length="0.085"/>
     </geometry>
   </collision>
 </link>
@@ -293,9 +286,9 @@
     <material name="silver"/>
   </visual>
   <collision>
-    <origin xyz="0.03625 0.1382 0.1655" rpy="0 0 0"/>
+    <origin xyz="0.0 0.026 -0.08" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="../meshes/right_knee_link_1.stl" scale="0.001 0.001 0.001"/>
+      <cylinder radius="0.032" length="0.085"/>
     </geometry>
   </collision>
 </link>
@@ -461,7 +454,7 @@
   <parent link="left_hip_yaw_link"/>
   <child link="left_knee_link"/>
   <axis xyz="0.0 -1.0 0.0"/>
-  <limit effort="14" lower="-1.57" upper="0.25" velocity="20"/>
+  <limit effort="14" lower="-2.3" upper="0.25" velocity="20"/>
 </joint>
 
 <joint name="right_knee_joint" type="revolute">
@@ -469,7 +462,7 @@
   <parent link="right_hip_yaw_link"/>
   <child link="right_knee_link"/>
   <axis xyz="0.0 -1.0 0.0"/>
-  <limit effort="14" lower="-1.57" upper="0.25" velocity="20"/>
+  <limit effort="14" lower="-2.3" upper="0.25" velocity="20"/>
 </joint>
 
 <joint name="left_ankle_pitch_joint" type="revolute">

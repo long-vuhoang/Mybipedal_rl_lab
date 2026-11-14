@@ -31,7 +31,7 @@ class Keyboard(DeviceBase):
             env: The (possibly wrapped) environment to control. Only requires
                 `.unwrapped` to expose `command_manager` and `episode_length_buf`.
             command_name: Name of the velocity command term in CommandsCfg
-                (matches `base_velocity` in SF_MINIBOT_EnvCfg.CommandsCfg).
+                (matches `base_velocity` in SF_MYBIPEDAL_EnvCfg.CommandsCfg).
             lin_vel_step: Step size for linear velocity control.
             ang_vel_step: Step size for angular velocity control.
         """

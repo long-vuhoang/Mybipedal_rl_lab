@@ -7,11 +7,11 @@ robot_type = os.getenv("ROBOT_TYPE")
 
 #-----------------------------------------------------------------
 @configclass
-class SF_MINIBOTFlatPPORunnerCfg(RslRlOnPolicyRunnerCfg):
+class SF_MYBIPEDALFlatPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     num_steps_per_env = 24
     max_iterations = 15000
     save_interval = 500
-    experiment_name = "sf_minibot_flat"
+    experiment_name = "sf_mybipedal_flat"
     empirical_normalization = False
     policy = RslRlPpoActorCriticCfg(
         init_noise_std=1.0,
@@ -45,11 +45,11 @@ class SF_MINIBOTFlatPPORunnerCfg(RslRlOnPolicyRunnerCfg):
 
 #-----------------------------------------------------------------
 @configclass
-class WF_MINIBOTFlatPPORunnerCfg(RslRlOnPolicyRunnerCfg):
+class WF_MYBIPEDALFlatPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     num_steps_per_env = 24
     max_iterations = 15000
     save_interval = 500
-    experiment_name = "wf_minibot_flat"
+    experiment_name = "wf_mybipedal_flat"
     empirical_normalization = False
     policy = RslRlPpoActorCriticCfg(
         init_noise_std=1.0,

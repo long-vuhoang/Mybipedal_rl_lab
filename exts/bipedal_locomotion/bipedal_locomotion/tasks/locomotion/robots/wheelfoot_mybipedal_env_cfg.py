@@ -1,20 +1,20 @@
 from isaaclab.utils import configclass
 
-from bipedal_locomotion.assets.config.wheelfoot_minibot_cfg import WHEELFOOT_MINIBOT_CFG
-from bipedal_locomotion.tasks.locomotion.cfg.WF_MINIBOT.minibot_base_env_cfg import WF_MINIBOT_EnvCfg
+from bipedal_locomotion.assets.config.wheelfoot_mybipedal_cfg import WHEELFOOT_MYBIPEDAL_CFG
+from bipedal_locomotion.tasks.locomotion.cfg.WF_MYBIPEDAL.mybipedal_base_env_cfg import WF_MYBIPEDAL_EnvCfg
 
 
 ######################
-# WF_MINIBOT Base Environment
+# WF_MYBIPEDAL Base Environment
 ######################
 
 
 @configclass
-class WF_MINIBOT_BaseEnvCfg(WF_MINIBOT_EnvCfg):
+class WF_MYBIPEDAL_BaseEnvCfg(WF_MYBIPEDAL_EnvCfg):
     def __post_init__(self):
         super().__post_init__()
 
-        self.scene.robot = WHEELFOOT_MINIBOT_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+        self.scene.robot = WHEELFOOT_MYBIPEDAL_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
         self.events.add_base_mass.params["asset_cfg"].body_names = "base_link"
         self.events.add_base_mass.params["mass_distribution_params"] = (-1.0, 2.0)
@@ -26,7 +26,7 @@ class WF_MINIBOT_BaseEnvCfg(WF_MINIBOT_EnvCfg):
 
 
 @configclass
-class WF_MINIBOT_BaseEnvCfg_PLAY(WF_MINIBOT_BaseEnvCfg):
+class WF_MYBIPEDAL_BaseEnvCfg_PLAY(WF_MYBIPEDAL_BaseEnvCfg):
     def __post_init__(self):
         super().__post_init__()
 
@@ -42,12 +42,12 @@ class WF_MINIBOT_BaseEnvCfg_PLAY(WF_MINIBOT_BaseEnvCfg):
 
 
 ############################
-# WF_MINIBOT Blind Flat Environment
+# WF_MYBIPEDAL Blind Flat Environment
 ############################
 
 
 @configclass
-class WF_MINIBOT_BlindFlatEnvCfg(WF_MINIBOT_BaseEnvCfg):
+class WF_MYBIPEDAL_BlindFlatEnvCfg(WF_MYBIPEDAL_BaseEnvCfg):
     def __post_init__(self):
         super().__post_init__()
 
@@ -57,7 +57,7 @@ class WF_MINIBOT_BlindFlatEnvCfg(WF_MINIBOT_BaseEnvCfg):
 
 
 @configclass
-class WF_MINIBOT_BlindFlatEnvCfg_PLAY(WF_MINIBOT_BaseEnvCfg_PLAY):
+class WF_MYBIPEDAL_BlindFlatEnvCfg_PLAY(WF_MYBIPEDAL_BaseEnvCfg_PLAY):
     def __post_init__(self):
         super().__post_init__()
 

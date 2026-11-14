@@ -1,20 +1,20 @@
 from isaaclab.utils import configclass
 
-from bipedal_locomotion.assets.config.solefoot_minibot_cfg import SOLEFOOT_MINIBOT_CFG
-from bipedal_locomotion.tasks.locomotion.cfg.SF_MINIBOT.minibot_base_env_cfg import SF_MINIBOT_EnvCfg
+from bipedal_locomotion.assets.config.solefoot_mybipedal_cfg import SOLEFOOT_MYBIPEDAL_CFG
+from bipedal_locomotion.tasks.locomotion.cfg.SF_MYBIPEDAL.mybipedal_base_env_cfg import SF_MYBIPEDAL_EnvCfg
 
 
 ######################
-# SF_MINIBOT Base Environment
+# SF_MYBIPEDAL Base Environment
 ######################
 
 
 @configclass
-class SF_MINIBOT_BaseEnvCfg(SF_MINIBOT_EnvCfg):
+class SF_MYBIPEDAL_BaseEnvCfg(SF_MYBIPEDAL_EnvCfg):
     def __post_init__(self):
         super().__post_init__()
 
-        self.scene.robot = SOLEFOOT_MINIBOT_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+        self.scene.robot = SOLEFOOT_MYBIPEDAL_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
         self.events.add_base_mass.params["asset_cfg"].body_names = "base_link"
         self.events.add_base_mass.params["mass_distribution_params"] = (-0.3, 0.3)
@@ -26,7 +26,7 @@ class SF_MINIBOT_BaseEnvCfg(SF_MINIBOT_EnvCfg):
 
 
 @configclass
-class SF_MINIBOT_BaseEnvCfg_PLAY(SF_MINIBOT_BaseEnvCfg):
+class SF_MYBIPEDAL_BaseEnvCfg_PLAY(SF_MYBIPEDAL_BaseEnvCfg):
     def __post_init__(self):
         super().__post_init__()
 
@@ -42,12 +42,12 @@ class SF_MINIBOT_BaseEnvCfg_PLAY(SF_MINIBOT_BaseEnvCfg):
 
 
 ############################
-# SF_MINIBOT Blind Flat Environment
+# SF_MYBIPEDAL Blind Flat Environment
 ############################
 
 
 @configclass
-class SF_MINIBOT_BlindFlatEnvCfg(SF_MINIBOT_BaseEnvCfg):
+class SF_MYBIPEDAL_BlindFlatEnvCfg(SF_MYBIPEDAL_BaseEnvCfg):
     def __post_init__(self):
         super().__post_init__()
 
@@ -57,7 +57,7 @@ class SF_MINIBOT_BlindFlatEnvCfg(SF_MINIBOT_BaseEnvCfg):
 
 
 @configclass
-class SF_MINIBOT_BlindFlatEnvCfg_PLAY(SF_MINIBOT_BaseEnvCfg_PLAY):
+class SF_MYBIPEDAL_BlindFlatEnvCfg_PLAY(SF_MYBIPEDAL_BaseEnvCfg_PLAY):
     def __post_init__(self):
         super().__post_init__()
 
